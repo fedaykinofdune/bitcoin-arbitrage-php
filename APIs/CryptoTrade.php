@@ -2,12 +2,11 @@
 	class CryptoTradeAPI extends API {
 
 		protected $url 					= "https://crypto-trade.com/api";
-		protected $apikey 				= "";
-		protected $apisecret			= "";
 		protected $symbol				= "ltc_btc";
 		protected $displayname			= "CRYPTOTRADE";
 
 		public function __construct() {
+			parent::__construct();
 			$call 		= sprintf("%s/1/depth/%s", $this->url, $this->symbol);
 			$ch 		= curl_init($call);
 
@@ -15,10 +14,6 @@
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
 
-		    global $config;
-		    $this->apikey 		= $config['keys'][$this->displayname]['key'];
-		    $this->apisecret 	= $config['keys'][$this->displayname]['secret'];
-		    
 		    $data = json_decode($result, true);
 
 			foreach ($data['bids'] as $bidData) {
@@ -37,5 +32,7 @@
 					}
 				}
 			}
+						
+			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
 	}

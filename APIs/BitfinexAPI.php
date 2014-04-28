@@ -2,20 +2,15 @@
 	class BitfinexAPI extends API {
 
 		protected $url 					= "https://api.bitfinex.com/v1";
-		protected $apikey 				= "";
-		protected $apisecret			= "";
 		protected $symbol				= "ltcbtc";
 		protected $displayname			= "BITFINEX";
 
 		public function __construct() {
+			parent::__construct();
 			$call 		= sprintf("%s/%s/%s", $this->url, "book", $this->symbol);
 			$ch 		= curl_init($call);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
-
-		    global $config;
-		    $this->apikey 		= $config['keys'][$this->displayname]['key'];
-		    $this->apisecret 	= $config['keys'][$this->displayname]['secret'];
 		    
 		    $data = json_decode($result, true);
 
@@ -35,5 +30,7 @@
 					}
 				}
 			}
+
+			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
 	}

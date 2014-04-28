@@ -2,12 +2,11 @@
 	class KrakenAPI extends API {
 
 		protected $url 					= "https://api.kraken.com/0/public";
-		protected $apikey 				= "";
-		protected $apisecret			= "";
 		protected $symbol				= "XBTLTC";
 		protected $displayname			= "KRAKEN";
 
 		public function __construct() {
+			parent::__construct();
 			$call 		= sprintf("%s/Depth?pair=%s", $this->url, $this->symbol);
 			$ch 		= curl_init($call);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
@@ -33,7 +32,8 @@
 					}
 				}
 			}
-			$this->getBalance();
+
+			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
 
 		public function getBalance() {

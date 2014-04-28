@@ -2,24 +2,17 @@
 	class BTCEAPI extends API {
 
 		protected $url 					= "https://btc-e.com/api/2";
-		protected $apikey 				= "";
-		protected $apisecret			= "";
 		protected $symbol				= "ltc_btc";
 		protected $displayname			= "BTC_E";
 
 		private   $privateApiUrl		= "https://btc-e.com/tapi";
 
 		public function __construct() {
+			parent::__construct();
 			$call 		= sprintf("%s/%s/depth", $this->url, $this->symbol);
 			$ch 		= curl_init($call);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
-
-		    global $config;
-		    $this->apikey 		= $config['keys'][$this->displayname]['key'];
-		    $this->apisecret 	= $config['keys'][$this->displayname]['secret'];
-		    
-
 		    $data = json_decode($result, true);
 
 			foreach ($data['bids'] as $bidData) {
@@ -39,7 +32,7 @@
 				}
 			}
 
-			$this->getBalance();
+			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
 
 		public function getBalance() {

@@ -6,23 +6,15 @@
 	</head>
 	<body>
 		<?php
-	//		header( "refresh:15;url=run.php" );
+			header( "refresh:10;url=run.php" );
 
 			include 'config.php';
 			$minimumProfitPerc = $config['minimumProfitPerc'];
+			$sellVolume = $config['sellVolume'];
 
 			foreach (glob("APIs/*.php") as $filename) {
 			    include $filename;
 			}
-
-			$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
-			// Set errormode to exceptions
-			$file_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$file_db->exec("CREATE TABLE IF NOT EXISTS messages (
-                    id INTEGER PRIMARY KEY, 
-                    title TEXT, 
-                    message TEXT, 
-                    time INTEGER)");
 
 			$apis = array(
 		//		new BitfinexAPI(),
@@ -33,9 +25,18 @@
 				new CryptoTradeAPI(),
 			);
 
+			$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
+			initializeDatabase($file_db, $apis);
+
 			foreach ($apis as $api) {
 				printf("%s<br>", nl2br($api));
 			}
+
+			$totalBalanceBTCBeforeTrades = getTotalBTC($apis);
+			$totalBalanceLTCBeforeTrades = getTotalLTC($apis);
+			
+			printf("Total BTC before trades: %0.8f<BR>", $totalBalanceBTCBeforeTrades);
+			printf("Total LTC before trades: %0.8f<BR><BR>", $totalBalanceLTCBeforeTrades);
 
 			$profits = array();
 
@@ -69,6 +70,30 @@
 				);
 				fwrite($fh, sprintf("[%s] %s\n", date('c'), $res));
 				fclose($fh);
+
+				if($lowestAskAPI->getDisplayName() != $highestBidAPI->getDisplayName()) {
+		//		if(true){
+					$lowestAskAPI->buyLTC($config['buySellVolume']);
+					$highestBidAPI->sellLTC($config['buySellVolume']);
+					printf("<br><b>Bought LTC at %s</b><br>", nl2br($lowestAskAPI));
+					printf("<b>Sold LTC at %s</b><br>", nl2br($highestBidAPI));
+
+					$totalBalanceBTCAfterTrades = getTotalBTC($apis);
+					$totalBalanceLTCAfterTrades = getTotalLTC($apis);
+					printf("Total BTC after trades: %0.8f (%0.8f)<BR>", $totalBalanceBTCAfterTrades, ($totalBalanceBTCAfterTrades - $totalBalanceBTCBeforeTrades));
+					printf("Total LTC after trades: %0.8f (%0.8f)<BR>", $totalBalanceLTCAfterTrades, ($totalBalanceLTCAfterTrades - $totalBalanceLTCBeforeTrades));
+
+					$lowestAskAPI->transferLTCToAPI($config['buySellVolume'], $highestBidAPI);
+					$highestBidAPI->transferBTCToAPI($config['buySellVolume'] * $lowestAsk, $lowestAskAPI);
+
+					$totalBalanceBTCAfterTransfers = getTotalBTC($apis);
+					$totalBalanceLTCAfterTransfers = getTotalLTC($apis);
+					printf("Total BTC after transfers: %0.8f (%0.8f)<BR>", $totalBalanceBTCAfterTransfers, ($totalBalanceBTCAfterTransfers - $totalBalanceBTCAfterTrades));
+					printf("Total LTC after transfers: %0.8f (%0.8f)<BR>", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades));
+
+					printf("<br><b>Transfered LTC from %s</b><br>", nl2br($lowestAskAPI));
+					printf("<b>Transfered LTC to %s</b><br>", nl2br($highestBidAPI));
+				}
 			} 
 
 			printf("<p %s>Highest profit: buy at %s, sell at %s ||  %0.8f BTC per LTC (%0.4f%% profit)</p>", $style, $lowestAskAPI->getDisplayName(), $highestBidAPI->getDisplayName(), $profit, $profitPerc);
@@ -99,6 +124,46 @@
 			    }
 			    return ($a->getHighestBid() > $b->getHighestBid()) ? -1 : 1;
 			}
+
+			function initializeDatabase($db, $apis) {
+				$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+				$result = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='balances';");
+				if ($result) {
+	  				if(false == $result->fetch(PDO::FETCH_ASSOC)) {
+	  					echo "creating";
+						$db->exec("CREATE TABLE IF NOT EXISTS balances (
+		                    key TEXT PRIMARY KEY,
+		                    btc TEXT, 
+		                    ltc TEXT)");
+
+					    $insert = "INSERT INTO balances (key, btc, ltc) VALUES (:key, :btc, :ltc)";
+					    $stmt = $db->prepare($insert);
+				        foreach ($apis as $api) {
+							$stmt->bindValue(':key', $api->getDisplayName(), PDO::PARAM_STR);
+							$stmt->bindValue(':btc', 0.25);
+							$stmt->bindValue(':ltc', 10.0);
+							$stmt->execute();
+						}
+					}
+	  			}
+			}
+
+			function getTotalLTC($apis) {
+				$totalFunds = 0.0;
+				foreach ($apis as $api) {
+					$totalFunds += $api->getBalanceLTC();
+				}
+				return $totalFunds;
+			}
+
+			function getTotalBTC($apis) {
+				$totalFunds = 0.0;
+				foreach ($apis as $api) {
+					$totalFunds += $api->getBalanceBTC();
+				}
+				return $totalFunds;
+			}
+
 		?>
 	</body>
 </html>

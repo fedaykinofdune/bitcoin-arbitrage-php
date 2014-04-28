@@ -2,20 +2,15 @@
 	class HitBtcAPI extends API {
 
 		protected $url 					= "http://api.hitbtc.com";
-		protected $apikey 				= "";
-		protected $apisecret			= "";
 		protected $symbol				= "LTCBTC";
 		protected $displayname			= "HITBTC";
 
 		public function __construct() {
+			parent::__construct();
 			$call 		= sprintf("%s/%s/%s/orderbook", $this->url, "api/1/public", $this->symbol);
 			$ch 		= curl_init($call);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
-
-		    global $config;
-		    $this->apikey 		= $config['keys'][$this->displayname]['key'];
-		    $this->apisecret 	= $config['keys'][$this->displayname]['secret'];
 
 		    $data = json_decode($result, true);
 
@@ -36,7 +31,7 @@
 				}
 			}
 
-			$this->getBalance();
+			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
 
 		public function getBalance() {
