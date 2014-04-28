@@ -1,27 +1,34 @@
 <?php
 	class API {
-		protected $url 						= "";
-		protected $apikey 					= "";
-		protected $apisecret				= "";
-		protected $symbol					= "";
-		protected $displayname				= "";
+		protected	$url 					= "";
+		protected	$apikey 				= "";
+		protected	$apisecret				= "";
+		protected	$symbol					= "";
+		protected	$displayname			= "";
 
-		protected $minAcceptableVolume		= 1.02;
-		protected $highestBid				= null;
-		protected $lowestAsk				= null;
-		protected $volumeForHighestBid		= 0.0;
-		protected $volumeForLowestAsk		= 0.0;
-		protected $balanceBTC				= 0.0;
-		protected $balanceLTC				= 0.0;
+		protected	$minAcceptableVolume	= 1.02;
+		protected	$highestBid				= null;
+		protected	$lowestAsk				= null;
+		protected	$volumeForHighestBid	= 0.0;
+		protected	$volumeForLowestAsk		= 0.0;
+		protected	$balanceBTC				= 0.0;
+		protected	$balanceLTC				= 0.0;
+		protected	$tradingFee				= 0.002;
+		protected	$btcTransferFee			= 0.0005;
+		protected	$ltcTransferFee			= 0.01;
 
-		protected $dryrun					= false;
-		private   $file_db					= false;
+		protected	$dryrun					= false;
+
+		private		$file_db				= false;
 
 
 		public function __construct() {
 		    global $config;
 		    $this->apikey 				= $config['keys'][$this->displayname]['key'];
 		    $this->apisecret 			= $config['keys'][$this->displayname]['secret'];
+		    $this->tradingFee 			= $config['keys'][$this->displayname]['tradingFee'];
+		    $this->btcTransferFee 		= $config['keys'][$this->displayname]['btcTransferFee'];
+		    $this->ltcTransferFee 		= $config['keys'][$this->displayname]['ltcTransferFee'];
 		    $this->minAcceptableVolume	= $config['minAcceptableVolume'];
 		    $this->dryrun				= $config['dryrun'];
 		}
@@ -84,28 +91,28 @@
 		}
 
 		public function buyLTC($ltcAmount) {
-			$this->balanceLTC += ($ltcAmount * 0.998);
+			$this->balanceLTC += ($ltcAmount * (1 - $this->tradingFee));
 			$this->balanceBTC -= ($ltcAmount * $this->lowestAsk);
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 
 		public function sellLTC($ltcAmount) {
 			$this->balanceLTC -= ($ltcAmount);
-			$this->balanceBTC += (($ltcAmount * $this->highestBid) * 0.998);
+			$this->balanceBTC += (($ltcAmount * $this->highestBid) * (1 - $this->tradingFee));
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 
 		public function transferLTCToAPI($ltcAmount, $receivingApi) {
 			printf("<p><u>Transfering %0.8f LTC from %s to %s</u></p>", $ltcAmount, $this->getDisplayName(), $receivingApi->getDisplayName());
 			$this->balanceLTC -= ($ltcAmount);
-			$receivingApi->receiveLTC($ltcAmount - 0.01);
+			$receivingApi->receiveLTC($ltcAmount - $this->ltcTransferFee);
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 
 		public function transferBTCToAPI($btcAmount, $receivingApi) {
 			printf("<p><u>Transfering %0.8f BTC from %s to %s</u></p>", $btcAmount, $this->getDisplayName(), $receivingApi->getDisplayName());
 			$this->balanceBTC -= ($btcAmount);
-			$receivingApi->receiveBTC($btcAmount - 0.0005);
+			$receivingApi->receiveBTC($btcAmount - $this->btcTransferFee);
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 		public function receiveLTC($amount) {

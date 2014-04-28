@@ -71,8 +71,8 @@
 				fwrite($fh, sprintf("[%s] %s\n", date('c'), $res));
 				fclose($fh);
 
-				if($lowestAskAPI->getDisplayName() != $highestBidAPI->getDisplayName()) {
-		//		if(true){
+		//		if($lowestAskAPI->getDisplayName() != $highestBidAPI->getDisplayName()) {
+				if(true){
 					$lowestAskAPI->buyLTC($config['buySellVolume']);
 					$highestBidAPI->sellLTC($config['buySellVolume']);
 					printf("<br><b>Bought LTC at %s</b><br>", nl2br($lowestAskAPI));
