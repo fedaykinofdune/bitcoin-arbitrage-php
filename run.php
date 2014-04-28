@@ -6,12 +6,23 @@
 	</head>
 	<body>
 		<?php
-			header( "refresh:15;url=run.php" );
-			$minimumProfitPerc = 1.0;
+	//		header( "refresh:15;url=run.php" );
+
+			include 'config.php';
+			$minimumProfitPerc = $config['minimumProfitPerc'];
 
 			foreach (glob("APIs/*.php") as $filename) {
 			    include $filename;
 			}
+
+			$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
+			// Set errormode to exceptions
+			$file_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$file_db->exec("CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY, 
+                    title TEXT, 
+                    message TEXT, 
+                    time INTEGER)");
 
 			$apis = array(
 		//		new BitfinexAPI(),

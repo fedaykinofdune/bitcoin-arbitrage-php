@@ -13,6 +13,10 @@
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
 
+		    global $config;
+		    $this->apikey 		= $config['keys'][$this->displayname]['key'];
+		    $this->apisecret 	= $config['keys'][$this->displayname]['secret'];
+		    
 		    $data = json_decode($result, true);
 
 			foreach ($data['bids'] as $bidData) {
