@@ -57,7 +57,7 @@
 			$style = "";
 			if($profitPerc >= $minimumProfitPerc) {
 				$style = "style='font-size: 140%%; font-weight:bold;'";
-				$fh = fopen("C:\\wamp\\www\\arbitrage\\found.log", "a+");
+				$fh = fopen(__DIR__ . "\\found.log", "a+");
 
 				$res = sprintf(
 					"buy at %s, sell at %s || %0.8f -> %0.8f || BTC profit per ltc: %0.8f (%0.4f%% profit)",
