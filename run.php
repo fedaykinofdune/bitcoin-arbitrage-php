@@ -14,7 +14,7 @@
 		while(true) {
 			output("\n===================\n");
 			run();
-			sleep(5);
+			sleep(20);
 		}		
 	}
 
