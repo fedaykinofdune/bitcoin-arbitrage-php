@@ -70,6 +70,11 @@
 
 			$query = sprintf("SELECT * FROM balances WHERE key = '%s';", $this->displayname);
 			$result = $this->file_db->query($query);
+			if(false == $result) {
+				$this->balanceBTC = 0.0;
+				$this->balanceLTC = 0.0;
+				return;
+			}
 			foreach($result as $row) {
 				$this->balanceBTC = $row['btc'];
 				$this->balanceLTC = $row['ltc'];
