@@ -40,7 +40,7 @@
 			$result = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='balances';");
 			if ($result) {
 				if(false == $result->fetch(PDO::FETCH_ASSOC)) {
-					echo "creating";
+					Utility::output(sprintf("Creating SQLite database, then quiting.\n"));
 					$db->exec("CREATE TABLE IF NOT EXISTS balances (
 						key TEXT PRIMARY KEY,	
 						btc TEXT, 

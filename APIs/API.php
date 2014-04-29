@@ -115,17 +115,23 @@
 		}
 
 		public function transferBTCToAPI($btcAmount, $receivingApi) {
-			Utility::output(sprintf("<u>Transfering %0.8f BTC from %s to %s</u>\n", $btcAmount, $this->getDisplayName(), $receivingApi->getDisplayName()));
+			Utility::output(sprintf("<u>Transfering %0.8f BTC from %s to %s</u>\n\n", $btcAmount, $this->getDisplayName(), $receivingApi->getDisplayName()));
 			$this->balanceBTC -= ($btcAmount);
 			$receivingApi->receiveBTC($btcAmount - $this->btcTransferFee);
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 		public function receiveLTC($amount) {
-			$this->balanceLTC += ($amount);
+			$this->balanceLTC += $amount;
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
 		public function receiveBTC($amount) {
-			$this->balanceBTC += ($amount);
+			$this->balanceBTC += $amount;
 			if($this->dryrun) { $this->storeLocalBalance(); }
+		}
+		public function hasEnoughBTCToBuy($ltcAmount) {
+			return ($this->balanceBTC >= ($ltcAmount * $this->lowestAsk));
+		}
+		public function hasEnoughLTCToSell($ltcAmount) {
+			return ($this->balanceLTC >= $ltcAmount);
 		}
 	}

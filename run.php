@@ -8,21 +8,23 @@
 	include 'config.php';
 	include 'Utility.php';
 
+	$refreshInterval = 60;
+
 	if(false == $cli) { 
-		header( "refresh:10;url=run.php" );
+		header(sprintf("refresh:%d;url=run.php", $refreshInterval));
 		echo '<html><head><style type="text/css">* { font-family:Courier;}</style></head><body>'; 
 		run();
 	} else {
 		while(true) {
 			run();
-			sleep(60);
+			sleep($refreshInterval);
 		}		
 	}
 
 
 	function run() {
 		global $cli, $config;
-		Utility::output(sprintf("\n======== start %0.2f %0.2f %0.2f ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
+		Utility::output(sprintf("\n======== start - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		$minimumProfitPerc = $config['minimumProfitPerc'];
 
@@ -85,33 +87,44 @@
 			fwrite($fh, sprintf("[%s] %s\n", date('c'), $res));
 			fclose($fh);
 
-	//		if($lowestAskAPI->getDisplayName() != $highestBidAPI->getDisplayName()) {
-			if(true){
-				$lowestAskAPI->buyLTC($config['buySellVolume']);
-				$highestBidAPI->sellLTC($config['buySellVolume']);
-				Utility::output(sprintf("\n<b>Bought LTC at %s</b>\n", nl2br($lowestAskAPI)));
-				Utility::output(sprintf("<b>Sold LTC at %s</b>\n", nl2br($highestBidAPI)));
+			$enoughBTC = $lowestAskAPI->hasEnoughBTCToBuy($config['buySellVolume']);
+			$enoughLTC = $highestBidAPI->hasEnoughLTCToSell($config['buySellVolume']);
 
-				$totalBalanceBTCAfterTrades = Utility::getTotalBTC($apis);
-				$totalBalanceLTCAfterTrades = Utility::getTotalLTC($apis);
-				Utility::output(sprintf("Total BTC after trades: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTrades, ($totalBalanceBTCAfterTrades - $totalBalanceBTCBeforeTrades)));
-				Utility::output(sprintf("Total LTC after trades: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTrades, ($totalBalanceLTCAfterTrades - $totalBalanceLTCBeforeTrades)));
-
-				$lowestAskAPI->transferLTCToAPI($config['buySellVolume'], $highestBidAPI);
-				$highestBidAPI->transferBTCToAPI($config['buySellVolume'] * $lowestAsk, $lowestAskAPI);
-
-				$totalBalanceBTCAfterTransfers = Utility::getTotalBTC($apis);
-				$totalBalanceLTCAfterTransfers = Utility::getTotalLTC($apis);
-				Utility::output(sprintf("Total BTC after transfers: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTransfers, ($totalBalanceBTCAfterTransfers - $totalBalanceBTCAfterTrades)));
-				Utility::output(sprintf("Total LTC after transfers: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades)));
-
-				Utility::output(sprintf("\n<b>Transfered LTC from %s</b>\n", nl2br($lowestAskAPI)));
-				Utility::output(sprintf("<b>Transfered LTC to %s</b>\n", nl2br($highestBidAPI)));
+			if(true != $enoughBTC) {
+				Utility::output(sprintf("\nWARNING! INSUFFICIENT BTC AT %s\n", $lowestAskAPI->getDisplayName()));
 			}
+			if(true != $enoughLTC) {
+				Utility::output(sprintf("\nWARNING! INSUFFICIENT LTC AT %s\n", $highestBidAPI->getDisplayName()));
+			}
+			if(($enoughBTC & $enoughLTC) != true) {
+				return;
+			}
+
+			$lowestAskAPI->buyLTC($config['buySellVolume']);
+			$highestBidAPI->sellLTC($config['buySellVolume']);
+			Utility::output(sprintf("\n<b>Bought LTC at %s</b>\n", nl2br($lowestAskAPI)));
+			Utility::output(sprintf("<b>Sold LTC at %s</b>\n", nl2br($highestBidAPI)));
+
+			$totalBalanceBTCAfterTrades = Utility::getTotalBTC($apis);
+			$totalBalanceLTCAfterTrades = Utility::getTotalLTC($apis);
+			Utility::output(sprintf("Total BTC after trades: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTrades, ($totalBalanceBTCAfterTrades - $totalBalanceBTCBeforeTrades)));
+			Utility::output(sprintf("Total LTC after trades: %0.8f (%0.8f)\n\n", $totalBalanceLTCAfterTrades, ($totalBalanceLTCAfterTrades - $totalBalanceLTCBeforeTrades)));
+
+			$lowestAskAPI->transferLTCToAPI($config['buySellVolume'], $highestBidAPI);
+			$highestBidAPI->transferBTCToAPI($config['buySellVolume'] * $lowestAsk, $lowestAskAPI);
+
+		//	Utility::output(sprintf("\n<b>Transfered LTC from %s</b>\n", nl2br($lowestAskAPI)));
+		//	Utility::output(sprintf("<b>Transfered LTC to %s</b>\n\n", nl2br($highestBidAPI)));
+
+			$totalBalanceBTCAfterTransfers = Utility::getTotalBTC($apis);
+			$totalBalanceLTCAfterTransfers = Utility::getTotalLTC($apis);
+			Utility::output(sprintf("Total BTC after transfers: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTransfers, ($totalBalanceBTCAfterTransfers - $totalBalanceBTCAfterTrades)));
+			Utility::output(sprintf("Total LTC after transfers: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades)));
+
 		} 
 
 		Utility::output(sprintf("<p %s>Highest profit: buy at %s, sell at %s ||  %0.8f BTC per LTC (%0.4f%% profit)</p>\n", $style, $lowestAskAPI->getDisplayName(), $highestBidAPI->getDisplayName(), $profit, $profitPerc));
-		Utility::output(sprintf("\n======== end %0.2f %0.2f %0.2f ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
+		Utility::output(sprintf("\n======== end - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		if(false == $cli) { echo '</body></html>'; } 
 	}
