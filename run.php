@@ -40,7 +40,8 @@
 		);
 
 		$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
-		Utility::initializeDatabase($file_db, $apis);
+		$init = Utility::initializeDatabase($file_db, $apis);
+		if($init) { return; }
 
 		foreach ($apis as $api) {
 			Utility::output($api);
@@ -153,23 +154,25 @@
 			$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$result = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='balances';");
 			if ($result) {
-					if(false == $result->fetch(PDO::FETCH_ASSOC)) {
-						echo "creating";
+				if(false == $result->fetch(PDO::FETCH_ASSOC)) {
+					echo "creating";
 					$db->exec("CREATE TABLE IF NOT EXISTS balances (
-	                    key TEXT PRIMARY KEY,
-	                    btc TEXT, 
-	                    ltc TEXT)");
+						key TEXT PRIMARY KEY,	
+						btc TEXT, 
+						ltc TEXT)");
 
-				    $insert = "INSERT INTO balances (key, btc, ltc) VALUES (:key, :btc, :ltc)";
-				    $stmt = $db->prepare($insert);
-			        foreach ($apis as $api) {
+					$insert = "INSERT INTO balances (key, btc, ltc) VALUES (:key, :btc, :ltc)";
+					$stmt = $db->prepare($insert);
+					foreach ($apis as $api) {
 						$stmt->bindValue(':key', $api->getDisplayName(), PDO::PARAM_STR);
 						$stmt->bindValue(':btc', 0.25);
 						$stmt->bindValue(':ltc', 10.0);
 						$stmt->execute();
 					}
+					return true;
 				}
-				}
+			}
+			return false;
 		}
 
 		static function getTotalLTC($apis) {
