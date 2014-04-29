@@ -189,12 +189,12 @@
 		}
 
 		static function getLowestAskApi($apis) {
-			usort($apis, 'apiSortLowestAskAsc'); 
+			usort($apis, array('Utility', 'apiSortLowestAskAsc')); 
 			return $apis[0];
 		}
 
 		static function getHighestBidApi($apis) {
-			usort($apis, 'apiSortHighestBidDesc'); 
+			usort($apis, array('Utility', 'apiSortHighestBidDesc')); 
 			return $apis[0];
 		}
 	}
