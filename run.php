@@ -21,6 +21,7 @@
 
 	function run() {
 		global $cli, $config;
+		output(sprintf("\n======== %0.2f %0.2f %0.2f ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		$minimumProfitPerc = $config['minimumProfitPerc'];
 
