@@ -23,7 +23,6 @@
 		global $cli, $config;
 
 		$minimumProfitPerc = $config['minimumProfitPerc'];
-		$sellVolume = $config['sellVolume'];
 
 		foreach (glob("APIs/*.php") as $filename) {
 		    include_once $filename;
