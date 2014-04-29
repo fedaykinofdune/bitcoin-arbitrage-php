@@ -6,7 +6,7 @@
 	    $cli = true;
 	}
 	include 'config.php';
-	include 'utility.php';
+	include 'Utility.php';
 
 	if(false == $cli) { 
 		header( "refresh:10;url=run.php" );
