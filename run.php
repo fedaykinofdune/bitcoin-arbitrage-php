@@ -17,7 +17,7 @@
 			}
 
 			$apis = array(
-				new BitfinexAPI(),
+		//		new BitfinexAPI(),
 				new BTCEAPI(),
 				new HitBtcAPI(),
 				new KrakenAPI(),
