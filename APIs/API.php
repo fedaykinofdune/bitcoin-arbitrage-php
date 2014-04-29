@@ -108,8 +108,8 @@
 		}
 
 		public function transferLTCToAPI($ltcAmount, $receivingApi) {
-			printf("<u>Transfering %0.8f LTC from %s to %s</u>\n", $ltcAmount, $this->getDisplayName(), $receivingApi->getDisplayName());
-			$Utility::output->balanceLTC -= ($ltcAmount);
+			Utility::output("<u>Transfering %0.8f LTC from %s to %s</u>\n", $ltcAmount, $this->getDisplayName(), $receivingApi->getDisplayName());
+			$this->balanceLTC -= ($ltcAmount);
 			$receivingApi->receiveLTC($ltcAmount - $this->ltcTransferFee);
 			if($this->dryrun) { $this->storeLocalBalance(); }
 		}
