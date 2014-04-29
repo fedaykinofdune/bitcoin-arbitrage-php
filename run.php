@@ -55,12 +55,10 @@
 
 		$profits = array();
 
-		usort($apis, 'apiSortLowestAskAsc'); 
-		$lowestAskAPI = $apis[0];
+		$lowestAskAPI = Utility::getLowestAskApi($apis);
 		Utility::output(sprintf("Lowest Ask: %s (%0.8f)\n", $lowestAskAPI->getDisplayName(), $lowestAskAPI->getLowestAsk()));
 
-		usort($apis, 'apiSortHighestBidDesc'); 
-		$highestBidAPI = $apis[0];
+		$highestBidAPI = Utility::getHighestBidApi($apis);
 		Utility::output(sprintf("Highest Bid: %s (%0.8f)\n", $highestBidAPI->getDisplayName(), $highestBidAPI->getHighestBid()));
 
 		$highestBid = $highestBidAPI->getHighestBid();
@@ -188,6 +186,16 @@
 				$totalFunds += $api->getBalanceBTC();
 			}
 			return $totalFunds;
+		}
+
+		static function getLowestAskApi($apis) {
+			usort($apis, 'apiSortLowestAskAsc'); 
+			return $apis[0];
+		}
+
+		static function getHighestBidApi($apis) {
+			usort($apis, 'apiSortHighestBidDesc'); 
+			return $apis[0];
 		}
 	}
 
