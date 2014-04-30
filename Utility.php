@@ -44,14 +44,16 @@
 					$db->exec("CREATE TABLE IF NOT EXISTS balances (
 						key TEXT PRIMARY KEY,	
 						btc TEXT, 
-						ltc TEXT)");
+						ltc TEXT, 
+						lasttrade INTEGER)");
 
-					$insert = "INSERT INTO balances (key, btc, ltc) VALUES (:key, :btc, :ltc)";
+					$insert = "INSERT INTO balances (key, btc, ltc, lasttrade) VALUES (:key, :btc, :ltc, :lasttrade)";
 					$stmt = $db->prepare($insert);
 					foreach ($apis as $api) {
 						$stmt->bindValue(':key', $api->getDisplayName(), PDO::PARAM_STR);
 						$stmt->bindValue(':btc', 0.25);
 						$stmt->bindValue(':ltc', 10.0);
+						$stmt->bindValue(':lasttrade', NULL);
 						$stmt->execute();
 					}
 					return true;

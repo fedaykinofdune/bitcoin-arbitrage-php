@@ -33,19 +33,26 @@
 		}
 
 		$apis = array(
-	//		new BitfinexAPI(),
+			new BitfinexAPI(),
 			new BTCEAPI(),
+			new BterAPI(),
+			new CryptoTradeAPI(),
+			new CryptsyAPI(),
 			new HitBtcAPI(),
 			new KrakenAPI(),
-	//		new VircurexAPI(),
-			new CryptoTradeAPI(),
+			new VircurexAPI(),
 		);
 
 		$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
 		$init = Utility::initializeDatabase($file_db, $apis);
 		if($init) { return; }
 
-		foreach ($apis as $api) {
+		foreach ($apis as $key => $api) {
+			if($api->getLastTradeTimestamp() > (time() - 3600)) {
+				unset($apis[$key]);
+			}
+		}
+		foreach ($apis as $key => $api) {
 			Utility::output($api);
 			Utility::output("\n");
 		}
@@ -73,7 +80,7 @@
 		$style = "";
 		if($profitPerc >= $minimumProfitPerc) {
 			$style = "style='font-size: 140%%; font-weight:bold;'";
-			$fh = fopen(__DIR__ . "\\found.log", "a+");
+			$fh = fopen(__DIR__ . "/found.log", "a+");
 
 			$res = sprintf(
 				"buy at %s, sell at %s || %0.8f -> %0.8f || BTC profit per ltc: %0.8f (%0.4f%% profit)",

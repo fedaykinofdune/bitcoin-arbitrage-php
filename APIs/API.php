@@ -86,11 +86,12 @@
 				$this->file_db = new PDO('sqlite:'.__DIR__.'/../localdata.sqlite3');
 			}
 
-			$query = "UPDATE balances SET btc = :btc, ltc = :ltc WHERE key = :key;";
+			$query = "UPDATE balances SET btc = :btc, ltc = :ltc , lasttrade = :lasttrade WHERE key = :key;";
 		    $stmt = $this->file_db->prepare($query);
 			$stmt->bindValue(':key', $this->getDisplayName(), PDO::PARAM_STR);
 			$stmt->bindValue(':btc', $this->getBalanceBTC(), PDO::PARAM_STR);
 			$stmt->bindValue(':ltc', $this->getBalanceLTC(), PDO::PARAM_STR);
+			$stmt->bindValue(':lasttrade', time(), PDO::PARAM_STR);
 			$stmt->execute();
 
 		}
@@ -133,5 +134,19 @@
 		}
 		public function hasEnoughLTCToSell($ltcAmount) {
 			return ($this->balanceLTC >= $ltcAmount);
+		}
+		public function getLastTradeTimestamp() {
+			if(false == $this->file_db) {
+				$this->file_db = new PDO('sqlite:'.__DIR__.'/../localdata.sqlite3');
+			}
+
+			$query = sprintf("SELECT lasttrade FROM balances WHERE key = '%s';", $this->displayname);
+			$result = $this->file_db->query($query);
+			if(false == $result) {
+				return null;
+			}
+			foreach($result as $row) {
+				return $row['lasttrade'];
+			}
 		}
 	}

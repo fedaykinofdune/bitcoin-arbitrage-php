@@ -1,24 +1,23 @@
 <?php 
-	class VircurexAPI extends API {
+	class BterAPI extends API {
 
-		protected $url 					= "https://api.vircurex.com/api";
-		protected $symbol1				= "LTC";
-		protected $symbol2				= "BTC";
-		protected $displayname			= "VIRCUREX";
+		protected $url 					= "https://data.bter.com/api/1";
+		protected $symbol				= "ltc_btc";
+		protected $displayname			= "BTER";
 
 		public function __construct() {
 			parent::__construct();
-			$call 		= sprintf("%s/orderbook.json?base=%s&alt=%s", $this->url, $this->symbol1, $this->symbol2);
+			$call 		= sprintf("%s/%s/%s", $this->url, "depth", $this->symbol);
 			$ch 		= curl_init($call);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
 		    if( ! $result = curl_exec($ch)) { return null; } 
-
+		    
 		    $data = json_decode($result, true);
 
 			foreach ($data['bids'] as $bidData) {
 				if($bidData[0] > $this->highestBid || false == isset($this->highestBid)) {
 					if($bidData[1] >= $this->minAcceptableVolume) {
-						$this->highestBid 			= $bidData[0];
+						$this->highestBid			= $bidData[0];
 						$this->volumeForHighestBid += $bidData[1];
 					}
 				}
@@ -31,7 +30,7 @@
 					}
 				}
 			}
+
 			if($this->dryrun) { $this->getLocalBalance(); } else { $this->getBalance(); }
 		}
-
 	}
