@@ -32,7 +32,7 @@
 		    include_once $filename;
 		}
 
-		$apis = array(
+		$all_apis = array(
 			new BitfinexAPI(),
 			new BTCEAPI(),
 			new BterAPI(),
@@ -44,31 +44,32 @@
 		);
 
 		$file_db = new PDO('sqlite:'.__DIR__.'/localdata.sqlite3');
-		$init = Utility::initializeDatabase($file_db, $apis);
+		$init = Utility::initializeDatabase($file_db, $all_apis);
 		if($init) { return; }
 
-		foreach ($apis as $key => $api) {
-			if($api->getLastTradeTimestamp() > (time() - 3600)) {
-				unset($apis[$key]);
+		$used_apis = array();
+		foreach ($all_apis as $key => $api) {
+			if($api->getLastTradeTimestamp() < (time() - 3600)) {
+				$used_apis[] = $api;
 			}
 		}
-		foreach ($apis as $key => $api) {
+		foreach ($used_apis as $key => $api) {
 			Utility::output($api);
 			Utility::output("\n");
 		}
 
-		$totalBalanceBTCBeforeTrades = Utility::getTotalBTC($apis);
-		$totalBalanceLTCBeforeTrades = Utility::getTotalLTC($apis);
+		$totalBalanceBTCBeforeTrades = Utility::getTotalBTC($all_apis);
+		$totalBalanceLTCBeforeTrades = Utility::getTotalLTC($all_apis);
 		
 		Utility::output(sprintf("Total BTC before trades: %0.8f\n", $totalBalanceBTCBeforeTrades));
 		Utility::output(sprintf("Total LTC before trades: %0.8f\n\n", $totalBalanceLTCBeforeTrades));
 
 		$profits = array();
 
-		$lowestAskAPI = Utility::getLowestAskApi($apis);
+		$lowestAskAPI = Utility::getLowestAskApi($used_apis, $config['buySellVolume']);
 		Utility::output(sprintf("Lowest Ask: %s (%0.8f)\n", $lowestAskAPI->getDisplayName(), $lowestAskAPI->getLowestAsk()));
 
-		$highestBidAPI = Utility::getHighestBidApi($apis);
+		$highestBidAPI = Utility::getHighestBidApi($used_apis, $config['buySellVolume']);
 		Utility::output(sprintf("Highest Bid: %s (%0.8f)\n", $highestBidAPI->getDisplayName(), $highestBidAPI->getHighestBid()));
 
 		$highestBid = $highestBidAPI->getHighestBid();
@@ -112,8 +113,8 @@
 			Utility::output(sprintf("\n<b>Bought LTC at %s</b>\n", nl2br($lowestAskAPI)));
 			Utility::output(sprintf("<b>Sold LTC at %s</b>\n", nl2br($highestBidAPI)));
 
-			$totalBalanceBTCAfterTrades = Utility::getTotalBTC($apis);
-			$totalBalanceLTCAfterTrades = Utility::getTotalLTC($apis);
+			$totalBalanceBTCAfterTrades = Utility::getTotalBTC($all_apis);
+			$totalBalanceLTCAfterTrades = Utility::getTotalLTC($all_apis);
 			Utility::output(sprintf("Total BTC after trades: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTrades, ($totalBalanceBTCAfterTrades - $totalBalanceBTCBeforeTrades)));
 			Utility::output(sprintf("Total LTC after trades: %0.8f (%0.8f)\n\n", $totalBalanceLTCAfterTrades, ($totalBalanceLTCAfterTrades - $totalBalanceLTCBeforeTrades)));
 
@@ -123,8 +124,8 @@
 		//	Utility::output(sprintf("\n<b>Transfered LTC from %s</b>\n", nl2br($lowestAskAPI)));
 		//	Utility::output(sprintf("<b>Transfered LTC to %s</b>\n\n", nl2br($highestBidAPI)));
 
-			$totalBalanceBTCAfterTransfers = Utility::getTotalBTC($apis);
-			$totalBalanceLTCAfterTransfers = Utility::getTotalLTC($apis);
+			$totalBalanceBTCAfterTransfers = Utility::getTotalBTC($all_apis);
+			$totalBalanceLTCAfterTransfers = Utility::getTotalLTC($all_apis);
 			Utility::output(sprintf("Total BTC after transfers: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTransfers, ($totalBalanceBTCAfterTransfers - $totalBalanceBTCAfterTrades)));
 			Utility::output(sprintf("Total LTC after transfers: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades)));
 

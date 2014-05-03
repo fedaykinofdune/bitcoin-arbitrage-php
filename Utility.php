@@ -78,13 +78,36 @@
 			return $totalFunds;
 		}
 
-		static function getLowestAskApi($apis) {
-			usort($apis, array('Utility', 'apiSortLowestAskAsc')); 
-			return $apis[0];
+		static function getLowestAskApi($apis, $amount_ltc) {
+			usort($apis, array('Utility', 'apiSortLowestAskAsc'));
+			foreach ($apis as $api) {
+				//check for available balance
+				if($api->getBalanceBTC() >= ($amount_ltc * $api->getLowestAsk())) {
+					return $api;
+				} else {
+					Utility::output(strtoupper(sprintf(
+						"not enough BTC to buy %0.2f LTC at %s\n\n",
+						$amount_ltc,
+						$api->getDisplayName()
+					)));
+				}
+			}
+			return null;
 		}
 
-		static function getHighestBidApi($apis) {
+		static function getHighestBidApi($apis, $amount_ltc) {
 			usort($apis, array('Utility', 'apiSortHighestBidDesc')); 
-			return $apis[0];
+			foreach ($apis as $api) {
+				//check for available balance
+				if($api->getBalanceLTC() >= $amount_ltc) {
+					return $api;
+				} else {
+					Utility::output(strtoupper(sprintf("not enough LTC to sell %0.2f LTC at %s\n\n",
+						$amount_ltc,
+						$api->getDisplayName()
+					)));
+				}
+			}
+			return null;
 		}
 	}
