@@ -79,9 +79,10 @@
 		$profit = $highestBid - $lowestAsk;
 		$profitPerc = $profit / ($lowestAsk / 100);
 
-		$style = "";
+		Utility::output(sprintf("<p>Highest profit: buy at %s, sell at %s ||  %0.8f BTC per LTC (%0.4f%% profit)</p>\n", $lowestAskAPI->getDisplayName(), $highestBidAPI->getDisplayName(), $profit, $profitPerc));
+		Utility::output(sprintf("\n======== end - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
+
 		if($profitPerc >= $minimumProfitPerc && $profitPerc <= $maximumProfitPerc) {
-			$style = "style='font-size: 140%%; font-weight:bold;'";
 			$fh = fopen(__DIR__ . "/found.log", "a+");
 
 			$res = sprintf(
@@ -131,9 +132,6 @@
 		//	Utility::output(sprintf("Total LTC after transfers: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades)));
 
 		} 
-
-		Utility::output(sprintf("<p %s>Highest profit: buy at %s, sell at %s ||  %0.8f BTC per LTC (%0.4f%% profit)</p>\n", $style, $lowestAskAPI->getDisplayName(), $highestBidAPI->getDisplayName(), $profit, $profitPerc));
-		Utility::output(sprintf("\n======== end - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		if(false == $cli) { echo '</body></html>'; } 
 	}
