@@ -36,9 +36,9 @@
 		$all_apis = array(
 			new BitfinexAPI(),
 			new BTCEAPI(),
-	//		new BterAPI(),
+			new BterAPI(),
 	//		new CryptoTradeAPI(),
-			new CryptsyAPI(),
+	//		new CryptsyAPI(), // don't trust this, false results from API
 			new HitBtcAPI(),
 	//		new KrakenAPI(),
 	//		new VircurexAPI(),
@@ -119,6 +119,10 @@
 			$totalBalanceLTCAfterTrades = Utility::getTotalLTC($all_apis);
 			Utility::output(sprintf("Total BTC after trades: %0.8f (%0.8f)\n", $totalBalanceBTCAfterTrades, ($totalBalanceBTCAfterTrades - $totalBalanceBTCBeforeTrades)));
 			Utility::output(sprintf("Total LTC after trades: %0.8f (%0.8f)\n\n", $totalBalanceLTCAfterTrades, ($totalBalanceLTCAfterTrades - $totalBalanceLTCBeforeTrades)));
+
+			if($config['singlerun'] === true) {
+				die();
+			}				
 
 		//	$lowestAskAPI->transferLTCToAPI($config['buySellVolume'], $highestBidAPI);
 		//	$highestBidAPI->transferBTCToAPI($config['buySellVolume'] * $lowestAsk, $lowestAskAPI);
