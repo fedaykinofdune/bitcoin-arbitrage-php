@@ -49,6 +49,34 @@
 			return array("btc" => $this->balanceBTC, "ltc" => $this->balanceLTC);
 		}
 
+		public function buyLTC($ltcAmount) {
+			$interface = new TradingApi($this->apikey, $this->apisecret);
+			$res =  $interface->new_order(array(
+				'clientOrderId' => $this->randomString(rand(8, 30)),
+				'symbol' => 'LTCBTC',
+				'side' => 'buy',
+				'price' => $this->lowestAsk,
+				'quantity' => $ltcAmount,
+				'type' => 'limit',
+				'timeInForce' => 'GTC'
+			));
+			print($res);
+		}
+
+		public function sellLTC($ltcAmount) {
+			$interface = new TradingApi($this->apikey, $this->apisecret);
+			$res =  $interface->new_order(array(
+				'clientOrderId' => $this->randomString(rand(8, 30)),
+				'symbol' => 'LTCBTC',
+				'side' => 'sell',
+				'price' => $this->highestBid,
+				'quantity' => $ltcAmount,
+				'type' => 'limit',
+				'timeInForce' => 'GTC'
+			));
+			print($res);
+		}
+
 		private function randomString($length) {
 		    $key = '';
 		    $keys = array_merge(range(0, 9), range('a', 'z'));
@@ -58,20 +86,12 @@
 		    return $key;
 		}
  
-// 		echo $interface->new_order(array(
-//         'clientOrderId' => randomString(rand(8, 30)),
-//         'symbol' => 'BTCUSD',
-//         'side' => 'sell',
-//         'price' => 10000.1,
-//         'quantity' => 1, // 1 lot => 0.01 BTC
-//         'type' => 'limit',
-//         'timeInForce' => 'GTC'
-//     	));
+
 	}
  
 	class TradingApi {
 	 
-	    CONST HITBTC_API_URL = 'http://api.hitbtc.com';
+	    CONST HITBTC_API_URL = 'https://api.hitbtc.com';
 	    CONST HITBTC_TRADING_API_URL_SEGMENT = '/api/1/trading/';
 	 
 	    private $_key, $_secret;

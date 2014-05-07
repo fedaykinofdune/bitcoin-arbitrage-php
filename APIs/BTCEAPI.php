@@ -43,6 +43,27 @@
 			return array("btc" => $this->balanceBTC, "ltc" => $this->balanceLTC);
 		}
 
+		public function buyLTC($ltcAmount) {
+			$result = $this->btce_query('Trade', array(
+				'pair' => 'ltc_btc', 
+				'type' => 'buy', 
+				'amount' => $ltcAmount, 
+				'rate' => $this->lowestAsk
+			));
+			print_r($result);
+
+		}
+
+		public function sellLTC($ltcAmount) {
+			$result = $this->btce_query('Trade', array(
+				'pair' => 'ltc_btc', 
+				'type' => 'sell', 
+				'amount' => $ltcAmount, 
+				'rate' => $this->highestBid
+			));
+			print_r($result);
+		}
+
 		private function btce_query($method, array $req = array()) {
 	        $key = $this->apikey;
 	        $secret = $this->apisecret;
@@ -68,9 +89,7 @@
 	 
 	        // run the query
 	        $res = curl_exec($ch);
-	        if ($res === false) throw new Exception('Could not get reply: '. curl_error($ch));
 	        $dec = json_decode($res, true);
-	        if (!$dec) throw new Exception('Invalid data received, please make sure connection is working and requested API exists');
 	        return $dec;
 		}
 	}
