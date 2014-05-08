@@ -24,7 +24,7 @@
 
 	function run() {
 		global $cli, $config;
-		Utility::output(sprintf("\n======== start - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
+		Utility::output(sprintf("\n[%s] start - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", date('c'), $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		$minimumProfitPerc = $config['minimumProfitPerc'];
 		$maximumProfitPerc = $config['maximumProfitPerc'];
@@ -80,8 +80,7 @@
 		$profitPerc = $profit / ($lowestAsk / 100);
 
 		Utility::output(sprintf("<p>Highest profit: buy at %s, sell at %s ||  %0.8f BTC per LTC (%0.4f%% profit)</p>\n", $lowestAskAPI->getDisplayName(), $highestBidAPI->getDisplayName(), $profit, $profitPerc));
-		Utility::output(sprintf("\n======== end - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
-
+		
 		if($profitPerc >= $minimumProfitPerc && $profitPerc <= $maximumProfitPerc) {
 			$fh = fopen(__DIR__ . "/found.log", "a+");
 
@@ -136,6 +135,7 @@
 		//	Utility::output(sprintf("Total LTC after transfers: %0.8f (%0.8f)\n", $totalBalanceLTCAfterTransfers, ($totalBalanceLTCAfterTransfers - $totalBalanceLTCAfterTrades)));
 
 		} 
+		Utility::output(sprintf("\n[%s] end   - %0.2f%% minprofit - %0.2f minvol - %0.2f tradevol ===========\n", date('c'), $config['minimumProfitPerc'], $config['minAcceptableVolume'], $config['buySellVolume']));
 
 		if(false == $cli) { echo '</body></html>'; } 
 	}

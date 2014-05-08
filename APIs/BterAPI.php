@@ -36,7 +36,7 @@
 
 		private function getBalance() {
 			$res = $this->bter_query ('1/private/getfunds');
-			print_r($res);
+//			print_r($res);
 			$this->balanceBTC = $res['available_funds']['BTC'];
 			$this->balanceLTC = $res['available_funds']['LTC'];
 			return array("btc" => $this->balanceBTC, "ltc" => $this->balanceLTC);
